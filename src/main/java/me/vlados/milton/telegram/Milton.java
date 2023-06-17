@@ -47,6 +47,8 @@ public class Milton extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        // If isInSession is true and the message is not 'exit' then all user messages will be sent to the OpenAI
+        // and generated text responses will be sent back to user
         if (isInSession && update.hasMessage() && !update.getMessage().getText().equals("exit")) {
             long chatId = update.getMessage().getChatId();
             String messageText = update.getMessage().getText();
@@ -66,6 +68,7 @@ public class Milton extends TelegramLongPollingBot {
             }
         }
 
+        // If is is the first time working with Milton (if '/start' was called once) then we will initialize the first reply
         else if (isFirstTime && update.hasMessage() && update.getMessage().getText().equals("/start")) {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(String.valueOf(update.getMessage().getChatId()));
@@ -89,8 +92,8 @@ public class Milton extends TelegramLongPollingBot {
             isFirstTime = false;
         }
 
+        // If user has sent the message and if it is 'list' and '/start' was called before then list of documents will be listed
         else if (update.hasMessage() && update.getMessage().getText().equals("list") && !isFirstTime) {
-            // Your existing code to handle text messages...
             String userMessage = update.getMessage().getText();
 
             if (userMessage.equals("list")) {
@@ -114,6 +117,8 @@ public class Milton extends TelegramLongPollingBot {
             }
         }
 
+        // isInSession and 'exit' checks
+        // If arguments are true, then the session with Milton will be terminated
         else if (isInSession && update.hasMessage() && update.getMessage().getText().equals("exit")) {
             isInSession = false;
 
@@ -137,7 +142,8 @@ public class Milton extends TelegramLongPollingBot {
                 e.printStackTrace();
             }
         }
-
+        
+        // If the user has clicked the inline button then we will check which one was clicked exactly
         else if (update.hasCallbackQuery()) {
             // Handle callback data from inline buttons
             String callbackData = update.getCallbackQuery().getData();
@@ -145,7 +151,6 @@ public class Milton extends TelegramLongPollingBot {
             SendMessage sendMessage = new SendMessage();
 
             if ("listCallbackData".equals(callbackData) || ("closeCallbackData").equals(callbackData)) {
-                // The button was clicked! Send a message in sendMessage...
                 sendMessage.setChatId(chatId);
                 sendMessage.setReplyMarkup(createInlineKeyboardReplies());
                 sendMessage.setText("""
@@ -275,6 +280,7 @@ public class Milton extends TelegramLongPollingBot {
         }
     }
 
+    // Creating buttons
     public InlineKeyboardMarkup createInlineKeyboardReplies() {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
@@ -359,6 +365,7 @@ public class Milton extends TelegramLongPollingBot {
         return markupInline;
     }
 
+    // Provide your own name
     @Override
     public String getBotUsername() {
         return "MiltonLibraryAssistant_Bot";
